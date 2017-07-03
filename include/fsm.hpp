@@ -61,6 +61,12 @@ struct transitions
 };
 
 template<typename Trs>
+struct state_instances
+{
+	typename Trs::states_tuple_t states;
+};
+
+template<typename Trs>
 struct fsm
 {
 private:
@@ -117,7 +123,7 @@ public:
 	fsm() :
 		current (0)
 	{
-		std::get<0>(states).event(detail::EvEnterState{});
+		std::get<0>(instances.states).event(detail::EvEnterState{});
 	}
 
 	// handle event E
@@ -144,12 +150,12 @@ private:
 	onImpl(const E &event, std::size_t atIdx, std::tuple_element_t<I::value, typename Transitions::states_tuple_t>* = nullptr)
 	{
 		if (I::value == atIdx) {
-			std::get<I::value>(states).event(event);
-			std::get<I::value>(states).event(detail::EvExitState{});
+			std::get<I::value>(instances.states).event(event);
+			std::get<I::value>(instances.states).event(detail::EvExitState{});
 
 			std::get<
 				next_state_index<I, E>::value
-			>(states).event(detail::EvEnterState{});
+			>(instances.states).event(detail::EvEnterState{});
 
 			current = next_state_index<I, E>::value;
 		}
@@ -162,7 +168,7 @@ private:
 	}
 
 private:
-	typename Transitions::states_tuple_t states;
+	state_instances<Trs> instances;
 	int current;
 };
 
