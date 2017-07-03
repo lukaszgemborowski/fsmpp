@@ -68,10 +68,12 @@ struct transitions
 	using state_events = meta::transform<list, state_events_func>;
 };
 
-template<typename Trs>
-struct state_instances
+template<typename> struct state_instances;
+
+template<typename... States>
+struct state_instances<std::tuple<States...>>
 {
-	typename Trs::states_tuple_t states;
+	std::tuple<States...> states;
 };
 
 template<typename Trs>
@@ -168,7 +170,7 @@ private:
 	}
 
 private:
-	state_instances<Trs> instances;
+	state_instances<typename Trs::states_tuple_t> instances;
 	int current;
 };
 
