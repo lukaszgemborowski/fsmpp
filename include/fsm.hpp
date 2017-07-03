@@ -33,7 +33,7 @@ struct state {
 } // namespace detail
 
 template<typename S1, typename E, typename S2>
-struct transition_definition
+struct transition
 {
 	using start_t = detail::state<S1>;
 	using stop_t = detail::state<S2>;

@@ -36,15 +36,15 @@ struct State_RunningOs
 
 using transitions = meta::list<
 	// normal startup off -> booting -> os
-	fsm::transition_definition<State_Off    , PowerOn, State_Booting>,
-	fsm::transition_definition<State_Booting, StartOs, State_RunningOs>,
+	fsm::transition<State_Off    , PowerOn, State_Booting>,
+	fsm::transition<State_Booting, StartOs, State_RunningOs>,
 
 	// switching off transitions
-	fsm::transition_definition<State_Booting, PowerOff, State_Off>,
-	fsm::transition_definition<State_RunningOs, PowerOff, State_Off>,
+	fsm::transition<State_Booting, PowerOff, State_Off>,
+	fsm::transition<State_RunningOs, PowerOff, State_Off>,
 
 	// can be reset only in OS
-	fsm::transition_definition<State_RunningOs, Reset, State_Booting>
+	fsm::transition<State_RunningOs, Reset, State_Booting>
 >;
 
 fsm::fsm<transitions> computer;
