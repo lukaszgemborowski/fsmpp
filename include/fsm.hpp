@@ -9,28 +9,6 @@ namespace detail
 struct EvEnterState {};
 struct EvExitState {};
 
-template<typename T>
-struct state {
-	T actual;
-
-	template<typename E>
-	void event(const E &event)
-	{
-		actual.event(event);
-	}
-
-	void event(const EvEnterState &)
-	{
-		actual.enter();
-	}
-
-	void event(const EvExitState &)
-	{
-		actual.exit();
-	}
-};
-
-
 } // namespace detail
 
 // defines one transition between two states, this is type triple:
@@ -73,7 +51,7 @@ template<typename> struct state_instances;
 template<typename... States>
 struct state_instances<std::tuple<States...>>
 {
-	std::tuple<detail::state<States>...> states;
+	std::tuple<States...> states;
 };
 
 template<typename Trs>
@@ -125,7 +103,7 @@ public:
 	fsm() :
 		current (0)
 	{
-		std::get<0>(instances.states).event(detail::EvEnterState{});
+		std::get<0>(instances.states).enter();
 	}
 
 	// handle event E
@@ -153,11 +131,11 @@ private:
 	{
 		if (I::value == atIdx) {
 			std::get<I::value>(instances.states).event(event);
-			std::get<I::value>(instances.states).event(detail::EvExitState{});
+			std::get<I::value>(instances.states).exit();
 
 			std::get<
 				next_state_index<I, E>::value
-			>(instances.states).event(detail::EvEnterState{});
+			>(instances.states).enter();
 
 			current = next_state_index<I, E>::value;
 		}
