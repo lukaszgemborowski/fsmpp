@@ -8,16 +8,32 @@ struct PowerOn {};
 struct Reset {};
 struct StartOs {};
 
-struct State_Off
+struct StateBase
 {
+public:
+	StateBase(int &resetCounter) : resetCounter_ (resetCounter) {}
+
+	void inc() { resetCounter_ ++; }
+	int resetCounter() const { return resetCounter_; }
+
+private:
+	int &resetCounter_;
+};
+
+struct State_Off : public StateBase
+{
+	using StateBase::StateBase;
+
 	void enter() { std::cout << "State_Off enter\n"; }
 	void exit() { std::cout << "State_Off exit\n"; }
 
 	void event(const PowerOn &) { std::cout << "PowerOn event\n"; }
 };
 
-struct State_Booting
+struct State_Booting : public StateBase
 {
+	using StateBase::StateBase;
+
 	void enter() { std::cout << "State_Booting enter\n"; }
 	void exit() { std::cout << "State_Booting exit\n"; }
 
@@ -25,13 +41,15 @@ struct State_Booting
 	void event(const PowerOff &) { std::cout << "PowerOff event\n"; }
 };
 
-struct State_RunningOs
+struct State_RunningOs : public StateBase
 {
+	using StateBase::StateBase;
+
 	void enter() { std::cout << "State_RunningOs enter\n"; }
 	void exit() { std::cout << "State_RunningOs exit\n"; }
 
 	void event(const PowerOff &) { std::cout << "PowerOff event\n"; }
-	void event(const Reset &) { std::cout << "Reset event\n"; }
+	void event(const Reset &) { std::cout << "Reset event\n"; inc(); }
 };
 
 using all = fsm::transitions<
@@ -47,7 +65,8 @@ using all = fsm::transitions<
 	fsm::transition<State_RunningOs, Reset, State_Booting>
 >;
 
-fsm::fsm<all> computer;
+int resetCounter = 0;
+fsm::fsm<all, int> computer(resetCounter);
 
 TEST_CASE("basic transitions", "[fsm]")
 {
@@ -55,5 +74,8 @@ TEST_CASE("basic transitions", "[fsm]")
 	computer.on(StartOs{});
 	computer.on(Reset{});
 	computer.on(StartOs{});
+	computer.on(Reset{});
 	computer.on(PowerOff{});
+
+	std::cout << "PC reset counter: " << resetCounter << std::endl;
 }

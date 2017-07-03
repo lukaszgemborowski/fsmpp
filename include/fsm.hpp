@@ -8,6 +8,7 @@ namespace detail
 {
 struct EvEnterState {};
 struct EvExitState {};
+struct null_context {};
 
 } // namespace detail
 
@@ -46,15 +47,26 @@ struct transitions
 	using state_events = meta::transform<list, state_events_func>;
 };
 
-template<typename> struct state_instances;
+template<typename, typename = detail::null_context> struct state_instances;
 
 template<typename... States>
-struct state_instances<std::tuple<States...>>
+struct state_instances<std::tuple<States...>, detail::null_context>
 {
 	std::tuple<States...> states;
 };
 
-template<typename Trs>
+template<typename... States, typename Ctx>
+struct state_instances<std::tuple<States...>, Ctx>
+{
+	std::tuple<States...> states;
+
+	state_instances(Ctx &ctx) :
+		states (std::make_tuple(States(ctx)...))
+	{
+	}
+};
+
+template<typename Trs, typename Context = detail::null_context>
 struct fsm
 {
 private:
@@ -106,6 +118,12 @@ public:
 		std::get<0>(instances.states).enter();
 	}
 
+	fsm(Context &ctx) :
+		instances (ctx),
+		current (0)
+	{
+	}
+
 	// handle event E
 	template<typename E>
 	void on(const E &event)
@@ -148,7 +166,7 @@ private:
 	}
 
 private:
-	state_instances<typename Trs::states_tuple_t> instances;
+	state_instances<typename Trs::states_tuple_t, Context> instances;
 	int current;
 };
 
