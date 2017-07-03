@@ -58,6 +58,14 @@ struct transitions
 
 	using states_tuple_t = meta::apply<meta::quote<std::tuple>, unique_states>;
 	using states_count = std::tuple_size<states_tuple_t>;
+
+	struct state_events_func {
+		template<typename T>
+		using invoke = meta::list<typename T::start_t, typename T::event_t>;
+	};
+
+	// create list of lists. This is StartState, Event extract from transitions
+	using state_events = meta::transform<list, state_events_func>;
 };
 
 template<typename Trs>
@@ -73,19 +81,11 @@ private:
 	// helper templates all down to the public section
 	using Transitions = Trs;
 
-	struct state_events {
-		template<typename T>
-		using invoke = meta::list<typename T::start_t, typename T::event_t>;
-	};
-
-	// create list of lists. This is StartState, Event extract from transitions
-	using all_state_events = meta::transform<typename Transitions::list, state_events>;
-
 	// count all (S[tartState], E[vent]) pairs in provided list
 	// this one is needed to determine if specified state S is handling event E
 	template<typename S, typename E>
 	using handle_event = meta::count<
-		all_state_events,
+		typename Transitions::state_events,
 		meta::list<S, E>>;
 
 	// meta-function for checking if provided T (struct transition) has the same S[tate] and E[vent]
