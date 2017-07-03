@@ -47,6 +47,16 @@ template<typename... Ts>
 struct transitions
 {
 	using list = meta::list<Ts...>;
+
+	struct transition_to_state {
+		template<typename T>
+		using invoke = typename T::start_t;
+	};
+
+	using states = meta::transform<list, transition_to_state>;
+	using unique_states = meta::unique<states>;
+
+	using states_tuple_t = meta::apply<meta::quote<std::tuple>, unique_states>;
 };
 
 template<typename Transitions>
@@ -54,17 +64,9 @@ struct fsm
 {
 private:
 	// helper templates all down to the public section
-	struct transition_to_state {
-		template<typename T>
-		using invoke = typename T::start_t;
-	};
-
-	using all_states = meta::transform<typename Transitions::list, transition_to_state>;
-	using all_unique_states = meta::unique<all_states>;
 
 	// determine tuple type based on provided transitios
-	using states_tuple_t = meta::apply<meta::quote<std::tuple>, all_unique_states>;
-	using state_count = std::tuple_size<states_tuple_t>;
+	using state_count = std::tuple_size<typename Transitions::states_tuple_t>;
 
 	struct state_events {
 		template<typename T>
@@ -98,19 +100,19 @@ private:
 	using destination_state = typename destination<S, E>::stop_t;
 
 	template<typename I>
-	using index_to_state = std::tuple_element_t<I::value, states_tuple_t>;
+	using index_to_state = std::tuple_element_t<I::value, typename Transitions::states_tuple_t>;
 
 	template<typename I, typename E>
 	using next_state = destination_state<index_to_state<I>, E>;
 
 	template<typename T>
-	using state_to_index = meta::find_index<meta::as_list<states_tuple_t>, T>;
+	using state_to_index = meta::find_index<meta::as_list<typename Transitions::states_tuple_t>, T>;
 
 	template<typename I, typename E>
 	using next_state_index = state_to_index<next_state<I, E>>;
 
 	template<typename I>
-	using state_t_by_index = std::tuple_element_t<I::value, states_tuple_t>;
+	using state_t_by_index = std::tuple_element_t<I::value, typename Transitions::states_tuple_t>;
 
 public:
 	fsm() :
@@ -140,7 +142,7 @@ private:
 
 	template<typename E, typename I>
 	std::enable_if_t<handle_event<state_t_by_index<I>, E>::value == 1>
-	onImpl(const E &event, std::size_t atIdx, std::tuple_element_t<I::value, states_tuple_t>* = nullptr)
+	onImpl(const E &event, std::size_t atIdx, std::tuple_element_t<I::value, typename Transitions::states_tuple_t>* = nullptr)
 	{
 		if (I::value == atIdx) {
 			std::get<I::value>(states).event(event);
@@ -156,12 +158,12 @@ private:
 
 	template<typename E, typename I>
 	std::enable_if_t<handle_event<state_t_by_index<I>, E>::value == 0>
-	onImpl(const E &event, std::size_t atIdx, std::tuple_element_t<I::value, states_tuple_t>* = nullptr)
+	onImpl(const E &event, std::size_t atIdx, std::tuple_element_t<I::value, typename Transitions::states_tuple_t>* = nullptr)
 	{
 	}
 
 private:
-	states_tuple_t states;
+	typename Transitions::states_tuple_t states;
 	int current;
 };
 
