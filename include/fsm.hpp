@@ -30,16 +30,6 @@ struct state {
 	}
 };
 
-struct transition_to_state {
-	template<typename T>
-	using invoke = typename T::start_t;
-};
-
-template<typename T>
-using all_states = meta::transform<T, transition_to_state>;
-
-template<typename T>
-using all_unique_states = meta::unique<all_states<T>>;
 
 } // namespace detail
 
@@ -58,9 +48,16 @@ struct fsm
 {
 private:
 	// helper templates all down to the public section
+	struct transition_to_state {
+		template<typename T>
+		using invoke = typename T::start_t;
+	};
+
+	using all_states = meta::transform<Transitions, transition_to_state>;
+	using all_unique_states = meta::unique<all_states>;
 
 	// determine tuple type based on provided transitios
-	using states_tuple_t = meta::apply<meta::quote<std::tuple>, detail::all_unique_states<Transitions>>;
+	using states_tuple_t = meta::apply<meta::quote<std::tuple>, all_unique_states>;
 	using state_count = std::tuple_size<states_tuple_t>;
 
 	struct state_events {
