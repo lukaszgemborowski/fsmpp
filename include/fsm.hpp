@@ -95,7 +95,7 @@ private:
 	using destination_state = typename destination<S, E>::stop_t;
 
 	template<typename I>
-	using index_to_state = std::tuple_element_t<I::value, typename Transitions::states_tuple_t>;
+	using index_to_state = typename std::tuple_element<I::value, typename Transitions::states_tuple_t>::type;
 
 	template<typename I, typename E>
 	using next_state = destination_state<index_to_state<I>, E>;
@@ -139,8 +139,8 @@ private:
 	}
 
 	template<typename E, typename I>
-	std::enable_if_t<handle_event<index_to_state<I>, E>::value == 1>
-	onImpl(const E &event, std::size_t atIdx, std::tuple_element_t<I::value, typename Transitions::states_tuple_t>* = nullptr)
+	typename std::enable_if<handle_event<index_to_state<I>, E>::value == 1>::type
+	onImpl(const E &event, std::size_t atIdx, typename std::tuple_element<I::value, typename Transitions::states_tuple_t>::type* = nullptr)
 	{
 		if (I::value == atIdx) {
 			if (std::get<I::value>(instances.states).event(event)) {
@@ -156,8 +156,8 @@ private:
 	}
 
 	template<typename E, typename I>
-	std::enable_if_t<handle_event<index_to_state<I>, E>::value == 0>
-	onImpl(const E &event, std::size_t atIdx, std::tuple_element_t<I::value, typename Transitions::states_tuple_t>* = nullptr)
+	typename std::enable_if<handle_event<index_to_state<I>, E>::value == 0>::type
+	onImpl(const E &event, std::size_t atIdx, typename std::tuple_element<I::value, typename Transitions::states_tuple_t>::type* = nullptr)
 	{
 	}
 
