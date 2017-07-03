@@ -38,8 +38,8 @@ struct state {
 template<typename S1, typename E, typename S2>
 struct transition
 {
-	using start_t = detail::state<S1>;
-	using stop_t = detail::state<S2>;
+	using start_t = S1;
+	using stop_t = S2;
 	using event_t = E;
 };
 
@@ -73,7 +73,7 @@ template<typename> struct state_instances;
 template<typename... States>
 struct state_instances<std::tuple<States...>>
 {
-	std::tuple<States...> states;
+	std::tuple<detail::state<States>...> states;
 };
 
 template<typename Trs>
