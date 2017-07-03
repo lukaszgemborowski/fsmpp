@@ -57,16 +57,15 @@ struct transitions
 	using unique_states = meta::unique<states>;
 
 	using states_tuple_t = meta::apply<meta::quote<std::tuple>, unique_states>;
+	using states_count = std::tuple_size<states_tuple_t>;
 };
 
-template<typename Transitions>
+template<typename Trs>
 struct fsm
 {
 private:
 	// helper templates all down to the public section
-
-	// determine tuple type based on provided transitios
-	using state_count = std::tuple_size<typename Transitions::states_tuple_t>;
+	using Transitions = Trs;
 
 	struct state_events {
 		template<typename T>
@@ -125,14 +124,14 @@ public:
 	template<typename E>
 	void on(const E &event)
 	{
-		onForAllImpl(event, current, meta::make_index_sequence<state_count::value>{});
+		onForAllImpl(event, current, meta::make_index_sequence<Transitions::states_count::value>{});
 	}
 
 private:
 	template<typename E, std::size_t... Is>
 	void onForAllImpl(const E &event, std::size_t atIdx, meta::index_sequence<Is...>)
 	{
-		int dummy[state_count::value] = {
+		int dummy[Transitions::states_count::value] = {
 			(
 				onImpl<E, std::integral_constant<std::size_t, Is>>(event, atIdx),
 				0
