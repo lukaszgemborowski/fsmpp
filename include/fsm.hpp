@@ -148,14 +148,15 @@ private:
 	onImpl(const E &event, std::size_t atIdx, std::tuple_element_t<I::value, typename Transitions::states_tuple_t>* = nullptr)
 	{
 		if (I::value == atIdx) {
-			std::get<I::value>(instances.states).event(event);
-			std::get<I::value>(instances.states).exit();
+			if (std::get<I::value>(instances.states).event(event)) {
+				std::get<I::value>(instances.states).exit();
 
-			std::get<
-				next_state_index<I, E>::value
-			>(instances.states).enter();
+				std::get<
+					next_state_index<I, E>::value
+				>(instances.states).enter();
 
-			current = next_state_index<I, E>::value;
+				current = next_state_index<I, E>::value;
+			}
 		}
 	}
 

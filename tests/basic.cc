@@ -27,7 +27,7 @@ struct State_Off : public StateBase
 	void enter() { std::cout << "State_Off enter\n"; }
 	void exit() { std::cout << "State_Off exit\n"; }
 
-	void event(const PowerOn &) { std::cout << "PowerOn event\n"; }
+	bool event(const PowerOn &) { std::cout << "PowerOn event\n"; return true; }
 };
 
 struct State_Booting : public StateBase
@@ -37,8 +37,8 @@ struct State_Booting : public StateBase
 	void enter() { std::cout << "State_Booting enter\n"; }
 	void exit() { std::cout << "State_Booting exit\n"; }
 
-	void event(const StartOs &) { std::cout << "StartOs event\n"; }
-	void event(const PowerOff &) { std::cout << "PowerOff event\n"; }
+	bool event(const StartOs &) { std::cout << "StartOs event\n"; return true; }
+	bool event(const PowerOff &) { std::cout << "PowerOff event\n"; return true; }
 };
 
 struct State_RunningOs : public StateBase
@@ -48,8 +48,8 @@ struct State_RunningOs : public StateBase
 	void enter() { std::cout << "State_RunningOs enter\n"; }
 	void exit() { std::cout << "State_RunningOs exit\n"; }
 
-	void event(const PowerOff &) { std::cout << "PowerOff event\n"; }
-	void event(const Reset &) { std::cout << "Reset event\n"; inc(); }
+	bool event(const PowerOff &) { std::cout << "PowerOff event\n"; return true; }
+	bool event(const Reset &) { std::cout << "Reset event\n"; inc(); return true; }
 };
 
 using all = fsm::transitions<
