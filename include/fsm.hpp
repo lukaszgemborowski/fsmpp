@@ -6,8 +6,6 @@ namespace fsm
 
 namespace detail
 {
-struct EvEnterState {};
-struct EvExitState {};
 struct null_context {};
 
 } // namespace detail
@@ -108,9 +106,6 @@ private:
 	template<typename I, typename E>
 	using next_state_index = state_to_index<next_state<I, E>>;
 
-	template<typename I>
-	using state_t_by_index = std::tuple_element_t<I::value, typename Transitions::states_tuple_t>;
-
 public:
 	fsm() :
 		current (0)
@@ -144,7 +139,7 @@ private:
 	}
 
 	template<typename E, typename I>
-	std::enable_if_t<handle_event<state_t_by_index<I>, E>::value == 1>
+	std::enable_if_t<handle_event<index_to_state<I>, E>::value == 1>
 	onImpl(const E &event, std::size_t atIdx, std::tuple_element_t<I::value, typename Transitions::states_tuple_t>* = nullptr)
 	{
 		if (I::value == atIdx) {
@@ -161,7 +156,7 @@ private:
 	}
 
 	template<typename E, typename I>
-	std::enable_if_t<handle_event<state_t_by_index<I>, E>::value == 0>
+	std::enable_if_t<handle_event<index_to_state<I>, E>::value == 0>
 	onImpl(const E &event, std::size_t atIdx, std::tuple_element_t<I::value, typename Transitions::states_tuple_t>* = nullptr)
 	{
 	}
