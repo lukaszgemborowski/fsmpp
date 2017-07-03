@@ -34,7 +34,7 @@ struct State_RunningOs
 	void event(const Reset &) { std::cout << "Reset event\n"; }
 };
 
-using transitions = meta::list<
+using all = fsm::transitions<
 	// normal startup off -> booting -> os
 	fsm::transition<State_Off    , PowerOn, State_Booting>,
 	fsm::transition<State_Booting, StartOs, State_RunningOs>,
@@ -47,7 +47,7 @@ using transitions = meta::list<
 	fsm::transition<State_RunningOs, Reset, State_Booting>
 >;
 
-fsm::fsm<transitions> computer;
+fsm::fsm<all> computer;
 
 TEST_CASE("basic transitions", "[fsm]")
 {

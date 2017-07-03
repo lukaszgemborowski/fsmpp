@@ -43,6 +43,12 @@ struct transition
 	using event_t = E;
 };
 
+template<typename... Ts>
+struct transitions
+{
+	using list = meta::list<Ts...>;
+};
+
 template<typename Transitions>
 struct fsm
 {
@@ -53,7 +59,7 @@ private:
 		using invoke = typename T::start_t;
 	};
 
-	using all_states = meta::transform<Transitions, transition_to_state>;
+	using all_states = meta::transform<typename Transitions::list, transition_to_state>;
 	using all_unique_states = meta::unique<all_states>;
 
 	// determine tuple type based on provided transitios
@@ -66,7 +72,7 @@ private:
 	};
 
 	// create list of lists. This is StartState, Event extract from transitions
-	using all_state_events = meta::transform<Transitions, state_events>;
+	using all_state_events = meta::transform<typename Transitions::list, state_events>;
 
 	// count all (S[tartState], E[vent]) pairs in provided list
 	// this one is needed to determine if specified state S is handling event E
@@ -85,7 +91,7 @@ private:
 
 	// selecting transition matching StartState-Event criteria
 	template<typename S, typename E>
-	using destination = meta::front<meta::find_if<Transitions, check_dest<S, E>>>;
+	using destination = meta::front<meta::find_if<typename Transitions::list, check_dest<S, E>>>;
 
 	// determining stop state from StartState, Event pair
 	template<typename S, typename E>
