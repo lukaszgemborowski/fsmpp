@@ -9,7 +9,8 @@ struct Reset {};
 struct StartOs {};
 struct Fail {};
 
-struct StateBase
+template<std::size_t ID>
+struct StateBase : public fsm::state<ID>
 {
 public:
 	StateBase(int &resetCounter) : resetCounter_ (resetCounter) {}
@@ -21,7 +22,7 @@ private:
 	int &resetCounter_;
 };
 
-struct State_Off : public StateBase
+struct State_Off : public StateBase<1>
 {
 	using StateBase::StateBase;
 
@@ -31,7 +32,7 @@ struct State_Off : public StateBase
 	bool event(const PowerOn &) { std::cout << "PowerOn event\n"; return true; }
 };
 
-struct State_Booting : public StateBase
+struct State_Booting : public StateBase<2>
 {
 	using StateBase::StateBase;
 
@@ -43,7 +44,7 @@ struct State_Booting : public StateBase
 	bool event(const Fail &) { std::cout << "Can't fail in Booting state\n"; return false; }
 };
 
-struct State_RunningOs : public StateBase
+struct State_RunningOs : public StateBase<3>
 {
 	using StateBase::StateBase;
 
@@ -74,13 +75,21 @@ fsm::fsm<all, int> computer(resetCounter);
 
 TEST_CASE("basic transitions", "[fsm]")
 {
+	std::cout << "Current state: " << computer.currentState() << std::endl;
 	computer.on(PowerOn{});
+	std::cout << "Current state: " << computer.currentState() << std::endl;
 	computer.on(StartOs{});
+	std::cout << "Current state: " << computer.currentState() << std::endl;
 	computer.on(Reset{});
+	std::cout << "Current state: " << computer.currentState() << std::endl;
 	computer.on(StartOs{});
+	std::cout << "Current state: " << computer.currentState() << std::endl;
 	computer.on(Reset{});
+	std::cout << "Current state: " << computer.currentState() << std::endl;
 	REQUIRE(computer.on(Fail{}) == false);
+	std::cout << "Current state: " << computer.currentState() << std::endl;
 	computer.on(PowerOff{});
+	std::cout << "Current state: " << computer.currentState() << std::endl;
 
 	std::cout << "PC reset counter: " << resetCounter << std::endl;
 }

@@ -70,6 +70,10 @@ struct state_instances<std::tuple<States...>, Ctx>
 	}
 };
 
+template<std::size_t ID>
+struct state : public std::integral_constant<std::size_t, ID> {
+};
+
 template<typename Trs, typename Context = detail::null_context>
 struct fsm
 {
@@ -132,7 +136,35 @@ public:
 		return onForAllImpl(event, current, meta::make_index_sequence<Transitions::states_count::value>{});
 	}
 
+	std::size_t currentState()
+	{
+		return currentStateForAll(current, meta::make_index_sequence<Transitions::states_count::value>{});
+	}
+
 private:
+	template<std::size_t... Is>
+	std::size_t currentStateForAll(int index, meta::index_sequence<Is...>)
+	{
+		std::size_t currentId = 0;
+
+		int dummy[Transitions::states_count::value] = {
+			(
+				currentStateImpl<std::integral_constant<std::size_t, Is>>(index, currentId),
+				0
+			)...
+		};
+
+		return currentId;
+	}
+
+	template<typename I>
+	void currentStateImpl(int index, std::size_t &currentId)
+	{
+		if (I::value == index) {
+			currentId = std::tuple_element<I::value, typename Transitions::states_tuple_t>::type::value;
+		}
+	}
+
 	template<typename E, std::size_t... Is>
 	bool onForAllImpl(const E &event, std::size_t atIdx, meta::index_sequence<Is...>)
 	{
