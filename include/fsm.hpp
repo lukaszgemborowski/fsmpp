@@ -127,29 +127,34 @@ public:
 
 	// handle event E
 	template<typename E>
-	void on(const E &event)
+	bool on(const E &event)
 	{
-		onForAllImpl(event, current, meta::make_index_sequence<Transitions::states_count::value>{});
+		return onForAllImpl(event, current, meta::make_index_sequence<Transitions::states_count::value>{});
 	}
 
 private:
 	template<typename E, std::size_t... Is>
-	void onForAllImpl(const E &event, std::size_t atIdx, meta::index_sequence<Is...>)
+	bool onForAllImpl(const E &event, std::size_t atIdx, meta::index_sequence<Is...>)
 	{
+		bool handled = false;
+
 		int dummy[Transitions::states_count::value] = {
 			(
-				onImpl<E, std::integral_constant<std::size_t, Is>>(event, atIdx),
+				onImpl<E, std::integral_constant<std::size_t, Is>>(event, atIdx, handled),
 				0
 			)...
 		};
+
+		return handled;
 	}
 
 	template<typename E, typename I>
 	typename std::enable_if<handle_event<index_to_state<I>, E>::value == 1>::type
-	onImpl(const E &event, std::size_t atIdx, typename std::tuple_element<I::value, typename Transitions::states_tuple_t>::type* = nullptr)
+	onImpl(const E &event, std::size_t atIdx, bool &handled, typename std::tuple_element<I::value, typename Transitions::states_tuple_t>::type* = nullptr)
 	{
 		if (I::value == atIdx) {
 			if (std::get<I::value>(instances.states).event(event)) {
+				handled = true;
 				std::get<I::value>(instances.states).exit();
 
 				std::get<
@@ -163,7 +168,7 @@ private:
 
 	template<typename E, typename I>
 	typename std::enable_if<handle_event<index_to_state<I>, E>::value == 0>::type
-	onImpl(const E &event, std::size_t atIdx, typename std::tuple_element<I::value, typename Transitions::states_tuple_t>::type* = nullptr)
+	onImpl(const E &event, std::size_t atIdx, bool &handled, typename std::tuple_element<I::value, typename Transitions::states_tuple_t>::type* = nullptr)
 	{
 	}
 

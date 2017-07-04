@@ -7,6 +7,7 @@ struct PowerOff {};
 struct PowerOn {};
 struct Reset {};
 struct StartOs {};
+struct Fail {};
 
 struct StateBase
 {
@@ -39,6 +40,7 @@ struct State_Booting : public StateBase
 
 	bool event(const StartOs &) { std::cout << "StartOs event\n"; return true; }
 	bool event(const PowerOff &) { std::cout << "PowerOff event\n"; return true; }
+	bool event(const Fail &) { std::cout << "Can't fail in Booting state\n"; return false; }
 };
 
 struct State_RunningOs : public StateBase
@@ -62,7 +64,9 @@ using all = fsm::transitions<
 	fsm::transition<State_RunningOs, PowerOff, State_Off>,
 
 	// can be reset only in OS
-	fsm::transition<State_RunningOs, Reset, State_Booting>
+	fsm::transition<State_RunningOs, Reset, State_Booting>,
+
+	fsm::transition<State_Booting, Fail, State_Off>
 >;
 
 int resetCounter = 0;
@@ -75,6 +79,7 @@ TEST_CASE("basic transitions", "[fsm]")
 	computer.on(Reset{});
 	computer.on(StartOs{});
 	computer.on(Reset{});
+	REQUIRE(computer.on(Fail{}) == false);
 	computer.on(PowerOff{});
 
 	std::cout << "PC reset counter: " << resetCounter << std::endl;
