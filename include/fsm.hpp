@@ -25,13 +25,19 @@ struct transitions
 {
 	using list = meta::list<Ts...>;
 
-	struct transition_to_state {
+	struct start_states_selector {
 		template<typename T>
 		using invoke = typename T::start_t;
 	};
 
-	using states = meta::transform<list, transition_to_state>;
-	using unique_states = meta::unique<states>;
+	struct stop_states_selector {
+		template<typename T>
+		using invoke = typename T::stop_t;
+	};
+
+	using start_states = meta::transform<list, start_states_selector>;
+	using stop_states = meta::transform<list, stop_states_selector>;
+	using unique_states = meta::unique<meta::concat<start_states, stop_states>>;
 
 	using states_tuple_t = meta::apply<meta::quote<std::tuple>, unique_states>;
 	using states_count = std::tuple_size<states_tuple_t>;
