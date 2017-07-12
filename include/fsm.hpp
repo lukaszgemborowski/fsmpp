@@ -156,6 +156,7 @@ private:
 				0
 			)...
 		};
+		(void)dummy;
 
 		return currentId;
 	}
@@ -179,6 +180,7 @@ private:
 				0
 			)...
 		};
+		(void)dummy;
 
 		return handled;
 	}
