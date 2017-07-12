@@ -1,3 +1,6 @@
+#ifndef FSM_HPP
+#define FSM_HPP
+
 #include <tuple>
 #include <meta/meta.hpp>
 
@@ -153,6 +156,7 @@ private:
 				0
 			)...
 		};
+		(void)dummy;
 
 		return currentId;
 	}
@@ -176,6 +180,7 @@ private:
 				0
 			)...
 		};
+		(void)dummy;
 
 		return handled;
 	}
@@ -210,3 +215,5 @@ private:
 };
 
 } // namespace fsm
+
+#endif // FSM_HPP
