@@ -1,3 +1,6 @@
+#ifndef FSM_HPP
+#define FSM_HPP
+
 #include <tuple>
 #include <meta/meta.hpp>
 
@@ -210,3 +213,5 @@ private:
 };
 
 } // namespace fsm
+
+#endif // FSM_HPP
