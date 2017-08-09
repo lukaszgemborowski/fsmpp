@@ -31,19 +31,24 @@ struct StateB : public fsm::state<2>
 	 * from this state. */
 	void enter() {}
 	void exit() {}
-};
 
-/* Simple state transition table, each element of
- * fsm::transitions describe one transition in form of:
- * transition<StartState, Trigger, EndState>. */ 
-using transition_table = fsm::transitions<
-	/* in this case there is only one transition, from
-	 * StateA to StateB triggered by EventStep */
-	fsm::transition<StateA, EventStep, StateB>
->;
+	bool event(const EventStep &)
+	{
+		return true;
+	}
+};
 
 TEST_CASE("Two state one transition", "[fsm]")
 {
+	/* Simple state transition table, each element of
+	 * fsm::transitions describe one transition in form of:
+	 * transition<StartState, Trigger, EndState>. */
+	using transition_table = fsm::transitions<
+		/* in this case there is only one transition, from
+		 * StateA to StateB triggered by EventStep */
+		fsm::transition<StateA, EventStep, StateB>
+	>;
+
 	/* create instance of state machine with predefined
 	 * transition table */
 	fsm::fsm<transition_table> sm;
@@ -53,4 +58,21 @@ TEST_CASE("Two state one transition", "[fsm]")
 	REQUIRE(sm.currentState() == 2);
 	sm.on(EventStep {});
 	REQUIRE(sm.currentState() == 2);
+}
+
+TEST_CASE("Two-way transition", "[fsm]")
+{
+	/* in this test case we want to go to StateB and back */
+	using transition_table = fsm::transitions<
+		fsm::transition<StateA, EventStep, StateB>,
+		fsm::transition<StateB, EventStep, StateA>
+	>;
+
+	fsm::fsm<transition_table> sm;
+
+	REQUIRE(sm.currentState() == 1);
+	sm.on(EventStep{});
+	REQUIRE(sm.currentState() == 2);
+	sm.on(EventStep{});;
+	REQUIRE(sm.currentState() == 1);
 }
