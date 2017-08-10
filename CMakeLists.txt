@@ -8,6 +8,7 @@ set(meta-dir ${CMAKE_CURRENT_SOURCE_DIR}/meta/include)
 set(test-sources
 	${test-dir}/basic.cc
 	${test-dir}/simplest.cc
+	${test-dir}/simple_context.cc
 )
 
 add_executable(tests ${test-sources})

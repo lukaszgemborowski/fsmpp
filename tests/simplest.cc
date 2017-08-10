@@ -1,6 +1,9 @@
 #include "catch.hpp"
 #include <fsm.hpp>
 
+namespace
+{
+
 /* Define an Event to trigger state machine transition */
 struct EventStep {};
 
@@ -37,6 +40,8 @@ struct StateB : public fsm::state<2>
 		return true;
 	}
 };
+
+}
 
 TEST_CASE("Two state one transition", "[fsm]")
 {
